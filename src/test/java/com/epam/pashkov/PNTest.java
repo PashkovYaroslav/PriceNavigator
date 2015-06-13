@@ -1,5 +1,8 @@
 package com.epam.pashkov;
 
+import com.epam.pashkov.helpers.ComparePageHelper;
+import com.epam.pashkov.helpers.ListPageHelper;
+import com.epam.pashkov.helpers.ProductDetailsPageHelper;
 import com.epam.pashkov.pageobject.ComparePage;
 import com.epam.pashkov.pageobject.HomePage;
 import com.epam.pashkov.pageobject.ListPage;
@@ -7,6 +10,8 @@ import com.epam.pashkov.pageobject.ProductDetailsPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,55 +20,65 @@ import java.util.Map;
 public class PNTest extends BaseTest {
     @Test
     public void verifySortByNameAndByPrice() {
+        ListPageHelper listPageHelper = new ListPageHelper();
         HomePage homePage = new HomePage(setup);
-        ListPage listPage = homePage.goToPage(HomePage.REFRIGERATOR_CATEGORY);
+        ListPage listPage = homePage.goToPage("Холодильники");
         listPage.clickOnSortByName();
-        Assert.assertTrue(listPage.verifySortByProductName(), "Verify sort of products by title.");
+        Assert.assertTrue(listPageHelper.verifySortByProductName(setup), "Verify sort of products by title.");
         listPage.clickOnSortByPrice();
-        Assert.assertTrue(listPage.verifySortByPrice(), "Verify sort of products by price.");
+        Assert.assertTrue(listPageHelper.verifySortByPrice(setup), "Verify sort of products by price.");
     }
 
     @Test
-    public void verifyCompare() {
+    public void verifyCompareOfTwoProducts() {
+        ComparePageHelper comparePageHelper = new ComparePageHelper();
+        ProductDetailsPageHelper productDetailsPageHelper = new ProductDetailsPageHelper();
         HomePage homePage = new HomePage(setup);
-        ListPage listPage = homePage.goToPage(HomePage.MICROVAWE_CATEGORY);
+        ListPage listPage = homePage.goToPage("Микроволновки");
+        List<Map<String, String>> listOfComparableProducts = new ArrayList<Map<String, String>>();
         ProductDetailsPage productPage = listPage.openProduct(0);
-        Map<String, String> firstProductDescription = productPage.descriptionOfProduct();
+        listOfComparableProducts.add(productDetailsPageHelper.descriptionOfProduct(setup));
         productPage.goToListPage();
         productPage = listPage.openProduct(1);
-        Map<String, String> secondProductDescription = productPage.descriptionOfProduct();
+        listOfComparableProducts.add(productDetailsPageHelper.descriptionOfProduct(setup));
         productPage.goToListPage();
-        ComparePage comparePage = listPage.addtoCompare();
-        Assert.assertTrue(comparePage.verifyCompareOfProducts(firstProductDescription, secondProductDescription), "Verify that all properties of products is displayed on Compare Page.");
-        Assert.assertTrue(comparePage.verifyColorOfDifferentValues(), "Verify that different properties are mark by color.");
+        listPage.addToCompare(1);
+        listPage.addToCompare(2);
+        ComparePage comparePage = listPage.compareProducts();
+        Assert.assertTrue(comparePageHelper.verifyCompareOfProducts(setup, listOfComparableProducts), "Verify that all properties of products is displayed on Compare Page.");
+        Assert.assertTrue(comparePageHelper.verifyColorOfDifferentValues(setup, listOfComparableProducts), "Verify that different properties are mark by color.");
     }
 
     @Test
     public void verifyPriceFilter() {
+        ListPageHelper listPageHelper = new ListPageHelper();
         HomePage homePage = new HomePage(setup);
-        ListPage listPage = homePage.goToPage(HomePage.WASHING_MACHINE_CATEGORY);
-        Assert.assertTrue(listPage.setAndVerifyPriceFilter(), "Verify price filter.");
+        ListPage listPage = homePage.goToPage("Стиральные машины");
+        Assert.assertTrue(listPageHelper.setAndVerifyPriceFilter(setup), "Verify price filter.");
     }
 
     @Test
     public void verifyBrandFilter() {
+        ListPageHelper listPageHelper = new ListPageHelper();
         HomePage homePage = new HomePage(setup);
-        ListPage listPage = homePage.goToPage(HomePage.BREAD_MACHINE_CATEGORY);
-        Assert.assertTrue(listPage.setAndVerifyBrandFilter(), "Verify brand filter.");
+        ListPage listPage = homePage.goToPage("Хлебопечи");
+        Assert.assertTrue(listPageHelper.setAndVerifyBrandFilter(setup, "Kenwood"), "Verify brand filter.");
     }
 
     @Test
     public void verifyWeightRegulatorFilter() {
+        ListPageHelper listPageHelper = new ListPageHelper();
         HomePage homePage = new HomePage(setup);
-        ListPage listPage = homePage.goToPage(HomePage.BREAD_MACHINE_CATEGORY);
-        Assert.assertTrue(listPage.setAndVerifyWeightRegulatorFilter(), "Verify that bread machines only with \"Weight Regulator\" displaying.");
+        ListPage listPage = homePage.goToPage("Хлебопечи");
+        Assert.assertTrue(listPageHelper.setAndVerifyWeightRegulatorFilter(setup), "Verify that bread machines only with \"Weight Regulator\" displaying.");
     }
 
     @Test
     public void verifyEqualsOfInformation() {
+        ListPageHelper listPageHelper = new ListPageHelper();
         HomePage homePage = new HomePage(setup);
-        ListPage listPage = homePage.goToPage(HomePage.CONDITIONER_CATEGORY);
-        Assert.assertTrue(listPage.informationEquals(), "Verify that description of product on product details page and catalogue is equal.");
-        Assert.assertTrue(listPage.informationEqualsWithPrice(), "Verify that description of product on product details page and price is equal.");
+        ListPage listPage = homePage.goToPage("Кондиционеры");
+        Assert.assertTrue(listPageHelper.informationEquals(setup), "Verify that description of product on product details page and catalogue is equal.");
+        Assert.assertTrue(listPageHelper.informationEqualsWithPrice(setup), "Verify that description of product on product details page and price is equal.");
     }
 }
